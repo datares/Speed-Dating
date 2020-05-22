@@ -1,0 +1,79 @@
+---
+title: "bar graphs of race"
+author: "Aden Chiu"
+date: "3/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r cars}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(lazyeval)
+library(scales)
+```
+
+```{r}
+df <- read_csv("Speed Dating Data.csv")
+#samerace 0 = 5062, 1 = 3316, total = 8378
+          
+same2 <- df %>%
+  group_by(samerace, match) %>%
+  summarise(n = n()) %>%
+  mutate(perc = n / sum(n)) %>%
+  select(samerace, match, perc)
+
+same2[same2 == 0] <- "No"
+same2[same2 == 1] <- "Yes"
+same2$match[same2$match == "No"] <- NA
+
+same2 <- na.omit(same2)
+
+ggplot(same2, aes(x = samerace, y = perc, fill = match, label = scales::percent(perc))) +
+  scale_y_continuous(labels = scales::percent) +
+  geom_bar(position = "dodge", stat = "identity", width = 0.8, fill = "#666699") +
+  geom_text(position = position_dodge(width = .9), vjust = -0.5, size = 3) +
+  scale_x_discrete(name = "Same Race") 
+```
+
+```{r}
+df <- read_csv("Speed Dating Data.csv")
+
+race1 <- df %>%
+  group_by(race, match) %>%
+  summarise(n = n()) %>%
+  mutate(perc = n / sum(n)) %>%
+  select(race, match, perc)  
+  
+race1$race[race1$race == 1] <- "African-American"
+race1$race[race1$race == 2] <- "Caucasian"
+race1$race[race1$race == 3] <- "Latino"
+race1$race[race1$race == 4] <- "Asian"
+race1$race[race1$race == 6] <- "Other"
+# 1(black) 420  2(white) 4727 3(latino) 664 4(asian) 1982 6(other) 522
+
+race1$race <- factor(race1$race,levels = c("African-American", "Caucasian", "Latino", "Asian", "Other"))
+
+race1$match[race1$match == 0] <- "No"
+race1$match[race1$match == 1] <- "Yes"
+race1$match[race1$match == "No"] <- NA
+
+race.final <- na.omit(race1) 
+
+ggplot(race.final, aes(x = race, y = perc, fill = match, label = scales::percent(perc))) +
+  scale_y_continuous(labels = scales::percent) +
+  geom_bar(position = "dodge", stat = "identity", width = 0.8, fill = "#666699") +
+  geom_text(aes(label = percent(perc)), position = position_dodge(width = .9), vjust = -.5, size = 3) +
+  scale_x_discrete(name = "Race") +
+  ggtitle("Match Percentage Based On Race") + 
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+
+```
