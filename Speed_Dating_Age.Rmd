@@ -1,0 +1,84 @@
+---
+title: "Speed Dating Age"
+author: "Aaron Lee"
+date: "April 8, 2020"
+output: pdf_document
+---
+
+```{r message = FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r message = FALSE, warning = FALSE}
+data <- read_csv("speed_dating_clean.csv")
+
+data_F <- subset(data, data$gender == 0)
+data_M <- subset(data, data$gender == 1)
+
+total_F <- aggregate(data_F$match, list(data_F$age_o), sum)
+total_F <- total_F[c(3:18, 20:21), ]
+total_M <- aggregate(data_M$match, list(data_M$age_o), sum)
+total_M <- total_M[1:19, ]
+
+names(total_F) <- c("Age", "Matches")
+names(total_M) <- c("Age", "Matches")
+```
+
+```{r}
+results_F <- aggregate(data_F$match, list(data_F$age_o), mean)
+results_F <- results_F[c(3:18, 20:21), ]
+
+names(results_F) <- c("Age", "Match Rate")
+
+ggplot(data = results_F, aes(x = Age, y = `Match Rate`)) + 
+  geom_line(linetype = "dashed") + 
+  geom_point() + 
+  scale_x_continuous(breaks = seq(from = 18, to = 56, by = 2), labels = seq(from = 18, to = 56, by = 2)) +
+  scale_y_continuous(breaks = c(0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30), 
+                     labels =  c("0", "0.05", "0.10", "0.15", "0.20", "0.25", "0.30")) +
+  ggtitle("Match Rate by Age for Females") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+results_M <- aggregate(data_M$match, list(data_M$age_o), mean)
+results_M <- results_M[1:19, ]
+
+names(results_M) <- c("Age", "Match Rate")
+
+ggplot(data = results_M, aes(x = Age, y = `Match Rate`)) + 
+  geom_line(linetype = "dashed") + 
+  geom_point() + 
+  scale_y_continuous(breaks = c(0, 0.10, 0.20, 0.30, 0.40, 0.50), labels =  c("0", "0.10", "0.20", "0.30", "0.40", "0.50")) +
+  scale_x_continuous(breaks = seq(from = 18, to = 38, by = 1), labels = seq(from = 18, to = 38, by = 1)) +
+  ggtitle("Match Rate by Age for Males") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot() + 
+  geom_col(aes(x = total_F$Age, y = total_F$Matches), fill = "pink") +
+  geom_line(aes(x = results_F$Age, y = results_F$`Match Rate` * 200), col = "black", linetype = "dashed", size = 1) +
+  scale_y_continuous(name = "Matches", sec.axis = sec_axis(trans =~. * 1/100, name = "Match Rate")) +
+  scale_x_continuous(breaks = 18:44, labels = 18:44) +
+  xlab("Age") +
+  ggtitle("Match Rate and Total Matches by Age for Females") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+```{r}
+ggplot() + 
+  geom_col(aes(x = total_M$Age, y = total_M$Matches), fill = "lightblue") +
+  geom_line(aes(x = results_M$Age, y = results_M$`Match Rate` * 200), col = "black", linetype = "dashed", size = 1) +
+  scale_y_continuous(name = "Matches", sec.axis = sec_axis(trans =~. * 1/100, name = "Match Rate")) +
+  scale_x_continuous(breaks = 18:38, labels = 18:38) +
+  xlab("Age") +
+  ggtitle("Match Rate and Total Matches by Age for Males") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+
